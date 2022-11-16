@@ -106,7 +106,7 @@ splunkObservability:
   # Required for Splunk Observability. Splunk Observability realm to send
   # telemetry data to. Setting this parameter enables Splunk Observability as a
   # destination.
-  realm: ""
+  realm: "us1"
   # Required for Splunk Observability (if `realm` is specified). Splunk
   # Observability org access token.
   accessToken: ""
@@ -120,14 +120,14 @@ splunkObservability:
 
   # Options to disable or enable particular telemetry data types.
   metricsEnabled: true
-  tracesEnabled: true
-  logsEnabled: false
+  tracesEnabled: false
+  logsEnabled: true
 
   # Option to send Kubernetes events to Splunk Observability Infrastructure Monitoring as data events:
   # https://docs.splunk.com/Observability/alerts-detectors-notifications/view-data-events.html
   # To send Kubernetes events to Splunk Observability Log Observer, set both clusterReceiver.eventsEnabled and
   # splunkObservability.logsEnabled to true.
-  infrastructureMonitoringEventsEnabled: false
+  infrastructureMonitoringEventsEnabled: true
 
   # This option just enables the shared pipeline for logs and profiling data.
   # There is no active collection of profiling data.
@@ -139,7 +139,7 @@ splunkObservability:
 # Logs collection engine:
 # - `fluentd`: deploy a fluentd sidecar that will collect logs and send them to
 #   otel-collector agent for further processing.
-# - `otel`: utilize native OpenTelemetry log collection.
+# - `otel`: utilize native OpenTelemetry log collection (experimental).
 #
 # Change it to `otel` to get higher throughput performance and avoid installing
 # an extra container for fluentd.
@@ -154,7 +154,7 @@ logsEngine: fluentd
 # - "azure" (Microsoft Azure)
 ################################################################################
 
-cloudProvider: ""
+cloudProvider: "aws"
 
 ################################################################################
 # Kubernetes distribution being run. Leave empty for other.
@@ -166,7 +166,7 @@ cloudProvider: ""
 # - "openshift" (RedHat OpenShift)
 ################################################################################
 
-distribution: ""
+distribution: "openshift"
 
 ################################################################################
 # Optional "environment" parameter that will be added to all the telemetry
@@ -185,7 +185,7 @@ distribution: ""
 ################################################################################
 
 autodetect:
-  prometheus: false
+  prometheus: true
   istio: false
 
 ################################################################################
@@ -262,11 +262,11 @@ agent:
     etcd:
       # Specifies whether to collect etcd metrics.
       # For set up etcd metrics details see: docs/advanced-configuration.md#setting-up-etcd-metrics
-      enabled: false
+      enabled: true
       secret:
         # The name of the secret the helm chart will create (if name is empty the default name is used) or the name
         # of a secret that the user created (empty names are not valid for user created secrets).
-        name: ""
+        name: "etcd-certs-splunk-otel"
         # Option for creating a new secret or using an existing one.
         # When secret.create=true, a new kubernetes secret will be created by the helm chart that will contain the
         # values from clientCert, clientKey, and caFile.
@@ -429,7 +429,7 @@ clusterReceiver:
   # depending on where you want to send the events. Otherwise this option will not have any effect.
   # The receiver currently is in alpha state which means that events format might change over time.
   # Once the receiver is stabilized, it'll be enabled by default in this helm chart
-  eventsEnabled: false
+  eventsEnabled: true
 
   # k8s cluster receiver extra pod labels
   podLabels: {}
@@ -453,7 +453,7 @@ clusterReceiver:
 #################################################################
 # Native OtelTelemetry logs collection using
 # https://github.com/open-telemetry/opentelemetry-log-collection.
-# Disabled by default in favor of fluentd.
+# Status: Experimental / disabled by default in favor of fluentd.
 #################################################################
 
 logsCollection:
@@ -896,6 +896,9 @@ tolerations:
 
 # Defines which nodes should be selected to deploy the o11y collector daemonset.
 nodeSelector: {}
+# uncomment to run only in master nodes
+# nodeSelector:
+#     node-role.kubernetes.io/master: ""
 terminationGracePeriodSeconds: 600
 
 # Defines node affinity to restrict deployment of the o11y collector daemonset.
