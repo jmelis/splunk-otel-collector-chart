@@ -187,7 +187,11 @@ service:
   pipelines:
     # k8s metrics pipeline
     metrics:
-      receivers: [k8s_cluster]
+      receivers:
+        - k8s_cluster
+        {{- if eq (include "splunk-otel-collector.o11yInfraMonEventsEnabled" .) "true" }}
+        - smartagent/kubernetes-events
+        {{- end }}
       processors: [memory_limiter, batch, resource, resource/k8s_cluster]
       exporters:
         {{- if (eq (include "splunk-otel-collector.o11yMetricsEnabled" .) "true") }}
